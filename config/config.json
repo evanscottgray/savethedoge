@@ -1,0 +1,20 @@
+{
+    "twilio" : {
+        "account_sid" : "",
+        "auth_token" : ""
+    },
+
+    "phone_numbers" : {
+        "primary" : "+12103645218",
+        "notifications" : [
+            "+12103267268",
+            "+12103934442",
+            "+12103934876"
+        ]
+    },
+
+    "medications" : {
+        "med_1" : "Thyroid Medication",
+        "med_2" : "Pain Relief Medication"
+    }
+}

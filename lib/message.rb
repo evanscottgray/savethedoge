@@ -16,6 +16,4 @@ class Message
 
   end
 
-
-
 end

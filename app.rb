@@ -2,38 +2,48 @@ require 'twilio-ruby'
 require 'json'
 require 'sinatra'
 require 'rufus-scheduler'
+require 'redis'
+require 'i_heart_quotes'
 
 require 'pp'
 
 require './lib/message'
+require './lib/meds'
 
 APP_CONFIG = JSON.parse(File.read('./config/config.json'))
-
 @twilioclient = Twilio::REST::Client.new APP_CONFIG['twilio']['account_sid'], APP_CONFIG['twilio']['auth_token']
-
 @scheduler = Rufus::Scheduler.new
+$redis = Redis.new
+
+$redis.set('meds_morning', "false")
+$redis.set('meds_evening', "false")
 
 
-=begin
-scheduler.every '12h', :first_at => Time.at(1396269000) do
 
-  @client.account.messages.create(
-      :from => '+12107142689',
-      :to => "#{APP_CONFIG['phone_numbers']['primary']}",
-      :body => "Hey there Elise! Did you feed Cami her #{APP_CONFIG['medications']['med_1']} and #{APP_CONFIG['medications']['med_2']} today?"
-  )
+@scheduler.every '12h', :first_at => Time.at(1396269000) do
+
+  if Time.now.hour <= 10
+    meds_morning
+  else
+    meds_evening
+  end
 
 end
-=end
-
-m = Message.new(@twilioclient)
-
-m.send("+12103934442", "Hey there!")
 
 
-post '/repsonse' do
+post '/response' do
 
-  pp params.inspect
+  if params[:Body].to_s.downcase.include? "yes" && Time.now.hour <= 10
+
+    $redis.set('meds_evening', "false")
+    $redis.set('meds_morning', "true")
+
+  elsif params[:Body].to_s.downcase.include? "yes" && Time.now.hour > 12
+
+    $redis.set('meds_evening', "true")
+    $redis.set('meds_morning', "false")
+
+  end
 
 end
 
